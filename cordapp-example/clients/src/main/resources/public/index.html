@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Example CorDapp</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script src="js/angular.min.js"></script>
+    <script src="js/ui-bootstrap-tpls.min.js"></script>
+    <script src="js/angular-module.js"></script>
+    <script type="text/javascript" src="js/jquery.qrcode.min.js"></script>
+    <script type="text/javascript" src="js/qrcode.min.js"></script>
+</head>
+<body ng-app="demoAppModule" ng-controller="DemoAppController as demoApp">
+<nav class="navbar navbar-default">
+    <div class="panel-primary">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                当前节点:
+            </h4>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">{{demoApp.thisNode}}</a>
+        </div>
+        <button ng-click="demoApp.openModal()" type="button" class="btn btn-primary navbar-btn">发起交易</button>
+    </div>
+</nav>
+<script type="text/ng-template" id="demoAppModal.html">
+    <div class="modal-header">
+        <h4 class="modal-title">交易详情</h4>
+    </div>
+    <form>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="counterparty" class="control-label">交易者:</label>
+                <select ng-model="modalInstance.form.counterparty" class="form-control" id="counterparty"
+                        ng-options="peer as peer for peer in modalInstance.peers">
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cash" class="control-label">结算金额:</label>
+                <input type="text" ng-model="modalInstance.form.cash" class="form-control" id="cash">
+            </div>
+            <div class="form-group">
+                <label for="oil" class="control-label">代扣金额:</label>
+                <input type="text" ng-model="modalInstance.form.oil" class="form-control" id="oil">
+            </div>
+            <div ng-show="modalInstance.formError" class="form-group">
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Error:</span>
+                    Enter valid parameters
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button ng-click="modalInstance.cancel()" type="button" class="btn btn-default">关闭</button>
+            <button ng-click="modalInstance.create()" type="button" class="btn btn-primary">提交</button>
+        </div>
+    </form>
+</script>
+<script type="text/ng-template" id="demoAppQR.html">
+    <div class="panel-primary">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                二维码:
+            </h4>
+        </div>
+    </div>
+    <div class="panel">
+        <div id="QRcode"></div>
+    </div>
+    <div class="panel">
+        <button ng-click="exportExcel()" type="button" class="btn btn-primary navbar-btn">导出到表</button>
+    </div>
+</script>
+<script type="text/ng-template" id="messageContent.html">
+    <div class="modal-body" id="modal-body">
+        {{ modalInstanceTwo.message }}
+    </div>
+</script>
+
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+        <div class="panel-group" id="accordion">
+            <div class="panel">
+                <div class="panel-primary">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            所有交易节点:
+                        </h4>
+                    </div>
+                </div>
+                <div>
+                    <div ng-repeat="peer in demoApp.peers" class="panel panel-default">
+                        <div class="panel-body">
+                            <ul>
+                                <li>节点: {{peer}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-primary">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            全部交易:
+                        </h4>
+                    </div>
+                </div>
+                <div>
+                    <div ng-show="!demoApp.ious.length" class="panel-body">使用发起交易按钮来创建交易事务</div>
+                    <div ng-repeat="iou in demoApp.ious" class="panel panel-default">
+                        <button ng-click="openqrModal($index)" type="button" class="btn btn-primary navbar-btn">生成二维码</button>
+                        <div class="panel-body">
+                            <ul>
+                                <li>买家: {{iou.buyer}}</li>
+                                <li>卖家: {{iou.seller}}</li>
+                                <li>结算金额: {{iou.cash}}</li>
+                                <li>代扣金额: {{iou.oil}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-primary">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            我的交易:
+                        </h4>
+                    </div>
+                </div>
+                <div>
+                    <div ng-repeat="iou in demoApp.myious" class="panel panel-default">
+                        <div class="panel-body">
+                            <ul>
+                                <li>买家: {{iou.buyer}}</li>
+                                <li>卖家: {{iou.seller}}</li>
+                                <li>结算金额: {{iou.cash}}</li>
+                                <li>代扣金额: {{iou.oil}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-1"></div>
+</div>
+
+</body>
+</html>
