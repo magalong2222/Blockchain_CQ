@@ -171,7 +171,7 @@ app.controller('ModalInstanceCtrlQR', function ($http, $location, $uibModalInsta
         modalInstanceTwo.result.then(() => {}, () => {});
     };
 });
-app.controller('ModalInstanceCtrl', function ($http, $location, $uibModalInstance, $uibModal, demoApp, apiBaseURL, peers, screenpeers, screenpeers_reverse, $scope) {
+app.controller('ModalInstanceCtrl', function ($http, $location, $uibModalInstance, $uibModal, demoApp, apiBaseURL, peers, screenpeers, screenpeers_reverse, $scope, $window) {
     const modalInstance = this;
     modalInstance.peers = peers
     modalInstance.form = {};
@@ -218,6 +218,14 @@ app.controller('ModalInstanceCtrl', function ($http, $location, $uibModalInstanc
 
         // No behaviour on close / dismiss.
         modalInstanceTwo.result.then(() => {}, () => {});
+        function sleep(ms) {
+          return new Promise(resolve =>
+              setTimeout(resolve, ms)
+          )
+        }
+        sleep(2000).then(()=>{
+            $window.location.reload();
+        })
     };
 
     // Close create IOU modal dialogue.
